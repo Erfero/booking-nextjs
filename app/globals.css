@@ -1,0 +1,369 @@
+:root {
+  --bg: #06120f;
+  --card: #101f1b;
+  --card-alt: #162a25;
+  --accent: #14b8a6;
+  --accent-ink: #06120f;
+  --text: #eafaf6;
+  --muted: #8fada5;
+  --border: rgba(255, 255, 255, 0.09);
+  --error: #f87171;
+  --success: #4ade80;
+  --accent-tint: rgba(20, 184, 166, 0.16);
+  --shadow: none;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f4faf9;
+  --card: #ffffff;
+  --card-alt: #eaf5f3;
+  --accent: #0d9488;
+  --accent-ink: #ffffff;
+  --text: #0b201c;
+  --muted: #5a7570;
+  --border: #dcebe8;
+  --error: #dc2626;
+  --success: #16a34a;
+  --accent-tint: rgba(13, 148, 136, 0.12);
+  --shadow: 0 1px 2px rgba(11, 32, 28, 0.04), 0 6px 20px rgba(11, 32, 28, 0.06);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Space Grotesk", sans-serif;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.c4l-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.c4l-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.c4l-icon-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.c4l-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.c4l-main {
+  flex: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px 20px 60px;
+}
+
+.c4l-badge {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--accent);
+  border: 1px solid var(--accent-tint);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.c4l-intro h1 {
+  font-size: 32px;
+  margin: 10px 0;
+}
+
+.c4l-lead {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0;
+}
+
+.c4l-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.c4l-steps {
+  display: flex;
+  gap: 8px;
+  margin: 24px 0;
+}
+
+.c4l-step {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.c4l-step.done {
+  background: var(--accent);
+}
+
+.c4l-service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.c4l-service-card {
+  padding: 18px;
+  text-align: left;
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+
+.c4l-service-card:hover,
+.c4l-service-card.selected {
+  border-color: var(--accent);
+}
+
+.c4l-service-card h3 {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.c4l-service-meta {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.c4l-service-price {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.c4l-service-desc {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.c4l-date-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-top: 16px;
+}
+
+.c4l-date-pill {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+  min-width: 64px;
+}
+
+.c4l-date-pill span {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.c4l-date-pill.selected {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+
+.c4l-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.c4l-slot {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+}
+
+.c4l-slot.selected {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  border-color: var(--accent);
+}
+
+.c4l-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.c4l-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.c4l-form input,
+.c4l-form textarea {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-alt);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.c4l-summary {
+  background: var(--card-alt);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.c4l-summary strong {
+  color: var(--text);
+}
+
+button.c4l-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+button.c4l-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.c4l-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.c4l-error {
+  color: var(--error);
+  font-size: 13px;
+  margin: 0;
+}
+
+.c4l-empty {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.c4l-confirmation {
+  padding: 32px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+.c4l-footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.c4l-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.c4l-table-wrap {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.c4l-admin-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.c4l-admin-table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.c4l-admin-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+}
