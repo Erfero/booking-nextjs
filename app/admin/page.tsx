@@ -13,6 +13,7 @@ interface Booking {
   customerEmail: string;
   customerPhone?: string;
   notes?: string;
+  status: "confirmed" | "cancelled";
 }
 
 function AdminHeader() {
@@ -21,7 +22,7 @@ function AdminHeader() {
   return (
     <header className="c4l-header">
       <a href="/" className="c4l-logo">{t("brand")}</a>
-      <div className="c4l-header-actions" style={{ display: "flex", gap: 8 }}>
+      <div className="c4l-header-actions">
         <button type="button" className="c4l-icon-btn" onClick={toggleTheme} aria-label="theme">
           {theme === "dark" ? "☀" : "☾"}
         </button>
@@ -39,13 +40,21 @@ export default function AdminPage() {
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [q, setQ] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const load = async (e?: React.FormEvent) => {
     e?.preventDefault();
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/bookings?key=${encodeURIComponent(key)}`);
+      const params = new URLSearchParams();
+      if (q) params.set("q", q);
+      if (dateFilter) params.set("date", dateFilter);
+      const res = await fetch(`/api/bookings?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${key}` },
+      });
       if (!res.ok) throw new Error(t("invalidKey"));
       setBookings(await res.json());
     } catch (err) {
@@ -53,6 +62,22 @@ export default function AdminPage() {
       setBookings(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancel = async (id: string) => {
+    setCancellingId(id);
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${key}` },
+      });
+      if (!res.ok) throw new Error();
+      setBookings((prev) => prev?.map((b) => (b._id === id ? { ...b, status: "cancelled" } : b)) ?? null);
+    } catch {
+      // ignore, list stays as-is
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -80,9 +105,31 @@ export default function AdminPage() {
   return (
     <div className="c4l-shell">
       <AdminHeader />
-      <main className="c4l-main" style={{ maxWidth: 1000 }}>
+      <main className="c4l-main" style={{ maxWidth: 1100 }}>
         <h1>{t("adminBookings")} ({bookings.length})</h1>
-        {bookings.length === 0 && <p className="c4l-empty">{t("adminEmpty")}</p>}
+
+        <form className="c4l-admin-filters" onSubmit={load}>
+          <input placeholder={t("adminSearchPlaceholder")} value={q} onChange={(e) => setQ(e.target.value)} />
+          <input type="date" title={t("adminFilterDate")} value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
+          <button type="submit" className="c4l-ghost">
+            {t("adminSubmit")}
+          </button>
+          {(q || dateFilter) && (
+            <button
+              type="button"
+              className="c4l-ghost"
+              onClick={() => {
+                setQ("");
+                setDateFilter("");
+                load();
+              }}
+            >
+              {t("adminClearFilter")}
+            </button>
+          )}
+        </form>
+
+        {bookings.length === 0 && <p className="c4l-empty">{t("adminNoResults")}</p>}
         {bookings.length > 0 && (
           <div className="c4l-table-wrap">
             <table className="c4l-admin-table">
@@ -93,11 +140,13 @@ export default function AdminPage() {
                   <th>{t("colService")}</th>
                   <th>{t("colClient")}</th>
                   <th>{t("colContact")}</th>
+                  <th>{t("colStatus")}</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {bookings.map((b) => (
-                  <tr key={b._id}>
+                  <tr key={b._id} className={b.status === "cancelled" ? "cancelled" : ""}>
                     <td>{b.date}</td>
                     <td>{b.time}</td>
                     <td>{b.serviceName}</td>
@@ -105,6 +154,23 @@ export default function AdminPage() {
                     <td>
                       {b.customerEmail}
                       {b.customerPhone ? ` · ${b.customerPhone}` : ""}
+                    </td>
+                    <td>
+                      <span className={"c4l-status-badge " + b.status}>
+                        {b.status === "confirmed" ? t("statusConfirmed") : t("statusCancelled")}
+                      </span>
+                    </td>
+                    <td>
+                      {b.status === "confirmed" && (
+                        <button
+                          type="button"
+                          className="c4l-ghost c4l-admin-cancel"
+                          disabled={cancellingId === b._id}
+                          onClick={() => handleCancel(b._id)}
+                        >
+                          {cancellingId === b._id ? t("adminCancelling") : t("adminCancelBtn")}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

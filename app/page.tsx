@@ -3,41 +3,28 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTheme } from "./useTheme";
 import { useI18n } from "./useI18n";
+import { ServiceIcon, ClockIcon, CheckCircleIcon } from "./icons";
+import Calendar from "./Calendar";
+import Testimonials from "./Testimonials";
+import Reveal from "./Reveal";
+import type { Service } from "@/lib/services";
 
-interface Service {
-  id: string;
-  name: string;
-  durationMinutes: number;
-  price: number;
-  description: string;
-}
+const HERO_IMAGE = "https://images.unsplash.com/photo-1638259116216-e7c65a918fd2?w=1000&q=80&fit=crop&auto=format";
 
-function nextBusinessDays(count: number): string[] {
-  const days: string[] = [];
-  const d = new Date();
-  while (days.length < count) {
-    const day = d.getDay();
-    if (day !== 0 && day !== 6) {
-      days.push(d.toISOString().slice(0, 10));
-    }
-    d.setDate(d.getDate() + 1);
-  }
-  return days;
-}
-
-function formatDateLabel(dateStr: string) {
+function formatDateLabel(dateStr: string, lang: "fr" | "en") {
   const d = new Date(`${dateStr}T00:00:00`);
+  const locale = lang === "fr" ? "fr-FR" : "en-US";
   return {
-    weekday: d.toLocaleDateString("fr-FR", { weekday: "short" }),
-    day: d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" }),
+    weekday: d.toLocaleDateString(locale, { weekday: "short" }),
+    day: d.toLocaleDateString(locale, { day: "2-digit", month: "short" }),
   };
 }
 
 export default function Home() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [services, setServices] = useState<Service[]>([]);
+  const [stats, setStats] = useState<{ totalBookings: number } | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [days] = useState(() => nextBusinessDays(10));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [slots, setSlots] = useState<string[]>([]);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -48,9 +35,16 @@ export default function Home() {
   const [confirmed, setConfirmed] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/services")
+    fetch(`/api/services?lang=${lang}`)
       .then((r) => r.json())
       .then(setServices);
+  }, [lang]);
+
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((r) => r.json())
+      .then(setStats)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -83,6 +77,7 @@ export default function Home() {
           serviceId: selectedService.id,
           date: selectedDate,
           time: selectedTime,
+          lang,
           ...form,
         }),
       });
@@ -101,17 +96,25 @@ export default function Home() {
       <div className="c4l-shell">
         <Header />
         <main className="c4l-main">
-          <div className="c4l-card c4l-confirmation">
+          <div className="c4l-card c4l-confirmation c4l-step-panel">
+            <div className="c4l-confirm-check">
+              <CheckCircleIcon size={40} />
+            </div>
             <span className="c4l-badge">{t("confirmedBadge")}</span>
             <h1 style={{ marginTop: 12 }}>{t("confirmedTitle")}</h1>
             <p className="c4l-lead" style={{ margin: "12px auto 0", textAlign: "center" }}>
-              {selectedService?.name} — {selectedDate && formatDateLabel(selectedDate).day} à {selectedTime}
+              {selectedService?.name} — {selectedDate && formatDateLabel(selectedDate, lang).day} à {selectedTime}
               <br />
               {t("reference")} : <code>{confirmed}</code>
             </p>
-            <button className="c4l-ghost" style={{ marginTop: 20 }} onClick={() => window.location.reload()}>
-              {t("bookAnother")}
-            </button>
+            <div className="c4l-confirm-actions">
+              <button className="c4l-ghost" onClick={() => window.location.reload()}>
+                {t("bookAnother")}
+              </button>
+              <a className="c4l-ghost" href="/mes-reservations">
+                {t("navMyBookings")}
+              </a>
+            </div>
           </div>
         </main>
         <Footer />
@@ -123,11 +126,36 @@ export default function Home() {
     <div className="c4l-shell">
       <Header />
       <main className="c4l-main">
-        <section className="c4l-intro">
-          <span className="c4l-badge">{t("badge")}</span>
-          <h1>{t("heroTitle")}</h1>
-          <p className="c4l-lead">{t("heroLead")}</p>
-        </section>
+        <Reveal>
+          <section className="c4l-hero">
+            <div className="c4l-hero-text">
+              <span className="c4l-badge">{t("badge")}</span>
+              <h1>{t("heroTitle")}</h1>
+              <p className="c4l-lead">{t("heroLead")}</p>
+              {stats && (
+                <div className="c4l-hero-stats">
+                  <div>
+                    <strong>{stats.totalBookings}+</strong>
+                    <span>{t("heroStatBookings")}</span>
+                  </div>
+                  <div>
+                    <strong>{services.length || 3}</strong>
+                    <span>{t("heroStatServices")}</span>
+                  </div>
+                  <div>
+                    <strong>⏱</strong>
+                    <span>{t("heroStatRealtime")}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="c4l-hero-image">
+              <img src={HERO_IMAGE} alt="" loading="eager" />
+            </div>
+          </section>
+        </Reveal>
+
+        <Testimonials />
 
         <div className="c4l-steps">
           {[1, 2, 3].map((s) => (
@@ -147,9 +175,14 @@ export default function Home() {
                 setSelectedTime(null);
               }}
             >
+              <span className="c4l-service-icon">
+                <ServiceIcon id={s.id} size={20} />
+              </span>
               <h3>{s.name}</h3>
               <div className="c4l-service-meta">
-                <span>{s.durationMinutes} min</span>
+                <span>
+                  <ClockIcon size={13} /> {s.durationMinutes} min
+                </span>
                 <span className="c4l-service-price">{s.price} €</span>
               </div>
               <p className="c4l-service-desc">{s.description}</p>
@@ -158,52 +191,36 @@ export default function Home() {
         </div>
 
         {selectedService && (
-          <>
+          <div className="c4l-step-panel">
             <h2 style={{ fontSize: 18, marginTop: 32, marginBottom: 4 }}>{t("step2")}</h2>
-            <div className="c4l-date-row">
-              {days.map((d) => {
-                const { weekday, day } = formatDateLabel(d);
-                return (
-                  <button
-                    key={d}
-                    className={"c4l-date-pill" + (selectedDate === d ? " selected" : "")}
-                    onClick={() => setSelectedDate(d)}
-                  >
-                    {day}
-                    <span>{weekday}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </>
+            <Calendar selected={selectedDate} onSelect={setSelectedDate} />
+          </div>
         )}
 
         {selectedDate && (
-          <>
+          <div className="c4l-step-panel">
             <h2 style={{ fontSize: 18, marginTop: 24, marginBottom: 4 }}>{t("step3")}</h2>
             {loadingSlots && <p className="c4l-empty">{t("loadingSlots")}</p>}
-            {!loadingSlots && slots.length === 0 && (
-              <p className="c4l-empty">{t("noSlots")}</p>
-            )}
+            {!loadingSlots && slots.length === 0 && <p className="c4l-empty">{t("noSlots")}</p>}
             <div className="c4l-slot-grid">
-              {slots.map((t) => (
+              {slots.map((slot) => (
                 <button
-                  key={t}
-                  className={"c4l-slot" + (selectedTime === t ? " selected" : "")}
-                  onClick={() => setSelectedTime(t)}
+                  key={slot}
+                  className={"c4l-slot" + (selectedTime === slot ? " selected" : "")}
+                  onClick={() => setSelectedTime(slot)}
                 >
-                  {t}
+                  {slot}
                 </button>
               ))}
             </div>
-          </>
+          </div>
         )}
 
         {selectedTime && (
-          <form className="c4l-card c4l-form" onSubmit={handleSubmit}>
+          <form className="c4l-card c4l-form c4l-step-panel" onSubmit={handleSubmit}>
             <h2 style={{ fontSize: 18 }}>{t("step4")}</h2>
             <div className="c4l-summary">
-              <strong>{selectedService?.name}</strong> — {selectedDate && formatDateLabel(selectedDate).day} à{" "}
+              <strong>{selectedService?.name}</strong> — {selectedDate && formatDateLabel(selectedDate, lang).day} à{" "}
               {selectedTime} ({selectedService?.durationMinutes} min, {selectedService?.price} €)
             </div>
             <label>
@@ -232,11 +249,7 @@ export default function Home() {
             </label>
             <label>
               {t("message")}
-              <textarea
-                rows={3}
-                value={form.notes}
-                onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              />
+              <textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </label>
             {error && <p className="c4l-error">{error}</p>}
             <button className="c4l-primary" type="submit" disabled={submitting}>
@@ -263,7 +276,10 @@ function Header() {
         </svg>
         {t("brand")}
       </a>
-      <div className="c4l-header-actions" style={{ display: "flex", gap: 8 }}>
+      <div className="c4l-header-actions">
+        <a href="/mes-reservations" className="c4l-nav-link">
+          {t("navMyBookings")}
+        </a>
         <button type="button" className="c4l-icon-btn" onClick={toggleTheme} aria-label="theme">
           {theme === "dark" ? "☀" : "☾"}
         </button>

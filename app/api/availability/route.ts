@@ -19,7 +19,9 @@ export async function GET(req: NextRequest) {
   }
 
   await connectDB();
-  const taken = await Booking.find({ date }).select("time -_id").lean();
+  const taken = await Booking.find({ date, status: { $ne: "cancelled" } })
+    .select("time -_id")
+    .lean();
   const takenTimes = new Set(taken.map((b) => b.time));
 
   const allSlots = generateDaySlots();

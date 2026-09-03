@@ -72,6 +72,24 @@ button {
   border-bottom: 1px solid var(--border);
 }
 
+.c4l-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.c4l-nav-link {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.c4l-nav-link:hover {
+  color: var(--accent);
+}
+
 .c4l-icon-btn {
   background: var(--card);
   border: 1px solid var(--border);
@@ -83,6 +101,12 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.c4l-icon-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .c4l-logo {
@@ -96,7 +120,7 @@ button {
 
 .c4l-main {
   flex: 1;
-  max-width: 900px;
+  max-width: 1040px;
   margin: 0 auto;
   width: 100%;
   padding: 32px 20px 60px;
@@ -111,9 +135,57 @@ button {
   padding: 3px 10px;
 }
 
-.c4l-intro h1 {
+.c4l-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 36px;
+}
+
+.c4l-hero-text h1 {
   font-size: 32px;
   margin: 10px 0;
+}
+
+.c4l-hero-image {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  aspect-ratio: 4 / 3;
+}
+
+.c4l-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.c4l-hero-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.c4l-hero-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.c4l-hero-stats strong {
+  font-size: 20px;
+  color: var(--accent);
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.c4l-hero-stats span {
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 120px;
 }
 
 .c4l-lead {
@@ -129,6 +201,32 @@ button {
   border: 1px solid var(--border);
   border-radius: 16px;
   box-shadow: var(--shadow);
+}
+
+.c4l-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.c4l-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes c4l-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.c4l-step-panel {
+  animation: c4l-step-in 0.35s ease both;
 }
 
 .c4l-steps {
@@ -159,12 +257,30 @@ button {
   padding: 18px;
   text-align: left;
   color: var(--text);
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-.c4l-service-card:hover,
+.c4l-service-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
 .c4l-service-card.selected {
   border-color: var(--accent);
+  background: var(--accent-tint);
+}
+
+.c4l-service-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent-tint);
+  color: var(--accent);
+  margin-bottom: 10px;
 }
 
 .c4l-service-card h3 {
@@ -175,9 +291,16 @@ button {
 .c4l-service-meta {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   color: var(--muted);
   font-size: 12px;
   margin-bottom: 8px;
+}
+
+.c4l-service-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .c4l-service-price {
@@ -192,36 +315,100 @@ button {
   margin: 0;
 }
 
-.c4l-date-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
+.c4l-calendar {
   margin-top: 16px;
-}
-
-.c4l-date-pill {
-  flex-shrink: 0;
-  padding: 10px 16px;
-  border-radius: 10px;
+  padding: 18px;
   border: 1px solid var(--border);
+  border-radius: 16px;
   background: var(--card);
-  color: var(--text);
-  font-size: 13px;
-  text-align: center;
-  min-width: 64px;
+  max-width: 360px;
 }
 
-.c4l-date-pill span {
-  display: block;
-  font-size: 11px;
-  color: var(--muted);
+.c4l-calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.c4l-calendar-title {
+  font-size: 14px;
   text-transform: capitalize;
 }
 
-.c4l-date-pill.selected {
+.c4l-calendar-nav {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-alt);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+
+.c4l-calendar-nav:hover:not(:disabled) {
   border-color: var(--accent);
-  background: var(--accent-tint);
+}
+
+.c4l-calendar-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.c4l-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.c4l-calendar-weekdays span {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.c4l-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.c4l-calendar-cell {
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  font-size: 13px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.c4l-calendar-cell.empty {
+  visibility: hidden;
+}
+
+.c4l-calendar-cell:not(.disabled):hover {
+  border-color: var(--accent);
+}
+
+.c4l-calendar-cell.disabled {
+  color: var(--muted);
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.c4l-calendar-cell.today {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.c4l-calendar-cell.selected {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
 }
 
 .c4l-slot-grid {
@@ -239,6 +426,12 @@ button {
   color: var(--text);
   font-size: 13px;
   text-align: center;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.c4l-slot:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
 }
 
 .c4l-slot.selected {
@@ -246,6 +439,7 @@ button {
   color: var(--accent-ink);
   font-weight: 700;
   border-color: var(--accent);
+  transform: none;
 }
 
 .c4l-form {
@@ -297,6 +491,12 @@ button.c4l-primary {
   padding: 12px;
   font-weight: 700;
   font-size: 14px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+button.c4l-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px var(--accent-tint);
 }
 
 button.c4l-primary:disabled {
@@ -304,6 +504,7 @@ button.c4l-primary:disabled {
   cursor: not-allowed;
 }
 
+a.c4l-ghost,
 button.c4l-ghost {
   background: transparent;
   color: var(--muted);
@@ -311,6 +512,17 @@ button.c4l-ghost {
   border-radius: 8px;
   padding: 8px 14px;
   font-size: 13px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+a.c4l-ghost:hover,
+button.c4l-ghost:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .c4l-error {
@@ -328,6 +540,41 @@ button.c4l-ghost {
   padding: 32px;
   text-align: center;
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.c4l-confirm-check {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-tint);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  animation: c4l-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes c4l-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.c4l-confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .c4l-footer {
@@ -366,4 +613,165 @@ button.c4l-ghost {
 .c4l-admin-table td {
   padding: 10px;
   border-bottom: 1px solid var(--border);
+}
+
+.c4l-admin-table tr.cancelled {
+  opacity: 0.5;
+}
+
+.c4l-admin-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.c4l-admin-filters input {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-alt);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.c4l-admin-cancel {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.c4l-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+
+.c4l-status-badge.confirmed {
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+.c4l-status-badge.cancelled {
+  background: rgba(248, 113, 113, 0.14);
+  color: var(--error);
+}
+
+.c4l-section-title {
+  font-size: 20px;
+  margin-bottom: 18px;
+}
+
+.c4l-testimonials {
+  margin: 12px 0 44px;
+}
+
+.c4l-testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.c4l-testimonial-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.c4l-testimonial-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+}
+
+.c4l-testimonial-stars {
+  display: flex;
+  gap: 2px;
+  color: var(--accent);
+}
+
+.c4l-testimonial-quote {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0;
+  flex: 1;
+}
+
+.c4l-testimonial-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.c4l-testimonial-person img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.c4l-testimonial-person strong {
+  display: block;
+  font-size: 13px;
+}
+
+.c4l-testimonial-person span {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.c4l-lookup-form {
+  max-width: 420px;
+  margin-top: 20px;
+}
+
+.c4l-booking-result {
+  margin-top: 20px;
+  padding: 20px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.c4l-booking-result-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.c4l-cancel-btn {
+  align-self: flex-start;
+  border-color: var(--error);
+  color: var(--error);
+}
+
+.c4l-cancel-btn:hover:not(:disabled) {
+  border-color: var(--error);
+  color: var(--error);
+  opacity: 0.85;
+}
+
+@media (max-width: 720px) {
+  .c4l-hero {
+    grid-template-columns: 1fr;
+  }
+  .c4l-hero-image {
+    order: -1;
+    aspect-ratio: 16 / 9;
+  }
+  .c4l-header-actions {
+    gap: 8px;
+  }
+  .c4l-nav-link {
+    font-size: 12px;
+  }
 }

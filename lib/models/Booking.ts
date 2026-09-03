@@ -10,6 +10,7 @@ export interface BookingDoc {
   customerEmail: string;
   customerPhone?: string;
   notes?: string;
+  status: "confirmed" | "cancelled";
   createdAt: Date;
 }
 
@@ -22,9 +23,13 @@ const bookingSchema = new Schema<BookingDoc>({
   customerEmail: { type: String, required: true },
   customerPhone: { type: String },
   notes: { type: String },
+  status: { type: String, enum: ["confirmed", "cancelled"], default: "confirmed" },
   createdAt: { type: Date, default: Date.now },
 });
 
-bookingSchema.index({ date: 1, time: 1 }, { unique: true });
+bookingSchema.index(
+  { date: 1, time: 1 },
+  { unique: true, partialFilterExpression: { status: "confirmed" } }
+);
 
 export default mongoose.models.Booking || mongoose.model<BookingDoc>("Booking", bookingSchema);
