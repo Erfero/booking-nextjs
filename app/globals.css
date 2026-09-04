@@ -735,10 +735,45 @@ button.c4l-ghost:hover:not(:disabled) {
 .c4l-booking-result {
   margin-top: 20px;
   padding: 20px;
-  max-width: 420px;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.c4l-booking-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.c4l-reschedule {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.c4l-reschedule h3 {
+  font-size: 14px;
+  margin: 0;
+}
+
+.c4l-reschedule .c4l-calendar {
+  max-width: 100%;
+  padding: 14px;
+}
+
+.c4l-reschedule-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.c4l-reschedule-success {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .c4l-booking-result-head {
@@ -760,6 +795,109 @@ button.c4l-ghost:hover:not(:disabled) {
   opacity: 0.85;
 }
 
+.c4l-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.c4l-stat-card {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.c4l-stat-card span {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.c4l-stat-card strong {
+  font-size: 22px;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--accent);
+}
+
+.c4l-stat-card.wide {
+  grid-column: span 2;
+}
+
+.c4l-stat-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.c4l-stat-breakdown div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.c4l-stat-breakdown strong {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.c4l-blocked-dates {
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.c4l-blocked-dates h2 {
+  font-size: 16px;
+  margin: 0 0 4px;
+}
+
+.c4l-blocked-form {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+
+.c4l-blocked-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.c4l-blocked-form input {
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-alt);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.c4l-blocked-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.c4l-blocked-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--card-alt);
+  font-size: 13px;
+}
+
 @media (max-width: 720px) {
   .c4l-hero {
     grid-template-columns: 1fr;
@@ -773,5 +911,8 @@ button.c4l-ghost:hover:not(:disabled) {
   }
   .c4l-nav-link {
     font-size: 12px;
+  }
+  .c4l-stat-card.wide {
+    grid-column: span 1;
   }
 }

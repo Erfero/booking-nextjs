@@ -4,9 +4,13 @@ import { useState } from "react";
 import { useTheme } from "../useTheme";
 import { useI18n } from "../useI18n";
 import { CheckCircleIcon, XCircleIcon } from "../icons";
+import { SERVICES_BASE } from "@/lib/services";
+import { downloadBookingIcs } from "../ics";
+import RescheduleForm from "../RescheduleForm";
 
 interface Booking {
   _id: string;
+  serviceId: string;
   serviceName: string;
   date: string;
   time: string;
@@ -42,12 +46,16 @@ export default function MyBookingsPage() {
   const [state, setState] = useState<"idle" | "searching" | "found">("idle");
   const [error, setError] = useState("");
   const [cancelling, setCancelling] = useState(false);
+  const [rescheduling, setRescheduling] = useState(false);
+  const [justRescheduled, setJustRescheduled] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setState("searching");
     setError("");
     setBooking(null);
+    setRescheduling(false);
+    setJustRescheduled(false);
     try {
       const res = await fetch("/api/bookings/lookup", {
         method: "POST",
@@ -91,6 +99,18 @@ export default function MyBookingsPage() {
       month: "long",
     });
 
+  const handleAddToCalendar = () => {
+    if (!booking) return;
+    const service = SERVICES_BASE.find((s) => s.id === booking.serviceId);
+    downloadBookingIcs({
+      title: booking.serviceName,
+      description: `${t("reference")}: ${booking._id}`,
+      date: booking.date,
+      time: booking.time,
+      durationMinutes: service?.durationMinutes ?? 60,
+    });
+  };
+
   return (
     <div className="c4l-shell">
       <Header />
@@ -132,13 +152,42 @@ export default function MyBookingsPage() {
                 {booking.status === "confirmed" ? t("statusConfirmed") : t("statusCancelled")}
               </span>
             </div>
-            {booking.status === "confirmed" ? (
-              <button type="button" className="c4l-ghost c4l-cancel-btn" onClick={handleCancel} disabled={cancelling}>
-                {cancelling ? t("cancelling") : t("cancelBtn")}
-              </button>
-            ) : (
-              <p className="c4l-empty">{t("cancelledNotice")}</p>
+
+            {justRescheduled && <p className="c4l-reschedule-success">{t("rescheduleSuccess")}</p>}
+
+            {booking.status === "confirmed" && !rescheduling && (
+              <div className="c4l-booking-actions">
+                <button type="button" className="c4l-ghost" onClick={handleAddToCalendar}>
+                  {t("addToCalendar")}
+                </button>
+                <button type="button" className="c4l-ghost" onClick={() => setRescheduling(true)}>
+                  {t("rescheduleBtn")}
+                </button>
+                <button
+                  type="button"
+                  className="c4l-ghost c4l-cancel-btn"
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                >
+                  {cancelling ? t("cancelling") : t("cancelBtn")}
+                </button>
+              </div>
             )}
+
+            {booking.status === "confirmed" && rescheduling && (
+              <RescheduleForm
+                bookingId={booking._id}
+                email={form.email}
+                onCancel={() => setRescheduling(false)}
+                onDone={(updated) => {
+                  setBooking(updated as unknown as Booking);
+                  setRescheduling(false);
+                  setJustRescheduled(true);
+                }}
+              />
+            )}
+
+            {booking.status === "cancelled" && <p className="c4l-empty">{t("cancelledNotice")}</p>}
           </div>
         )}
       </main>

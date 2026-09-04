@@ -7,6 +7,7 @@ import { ServiceIcon, ClockIcon, CheckCircleIcon } from "./icons";
 import Calendar from "./Calendar";
 import Testimonials from "./Testimonials";
 import Reveal from "./Reveal";
+import { downloadBookingIcs } from "./ics";
 import type { Service } from "@/lib/services";
 
 const HERO_IMAGE = "https://images.unsplash.com/photo-1638259116216-e7c65a918fd2?w=1000&q=80&fit=crop&auto=format";
@@ -108,6 +109,23 @@ export default function Home() {
               {t("reference")} : <code>{confirmed}</code>
             </p>
             <div className="c4l-confirm-actions">
+              <button
+                className="c4l-ghost"
+                onClick={() =>
+                  selectedService &&
+                  selectedDate &&
+                  selectedTime &&
+                  downloadBookingIcs({
+                    title: selectedService.name,
+                    description: `${t("reference")}: ${confirmed}`,
+                    date: selectedDate,
+                    time: selectedTime,
+                    durationMinutes: selectedService.durationMinutes,
+                  })
+                }
+              >
+                {t("addToCalendar")}
+              </button>
               <button className="c4l-ghost" onClick={() => window.location.reload()}>
                 {t("bookAnother")}
               </button>

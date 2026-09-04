@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "./icons";
 import { useI18n } from "./useI18n";
 
@@ -32,6 +32,14 @@ export default function Calendar({
   const { lang } = useI18n();
   const today = useMemo(() => new Date(new Date().setHours(0, 0, 0, 0)), []);
   const [viewMonth, setViewMonth] = useState(() => startOfMonth(today));
+  const [blockedDates, setBlockedDates] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetch("/api/blocked-dates")
+      .then((r) => r.json())
+      .then((rows: { date: string }[]) => setBlockedDates(new Set(rows.map((r) => r.date))))
+      .catch(() => {});
+  }, []);
 
   const minMonth = startOfMonth(today);
   const maxMonth = new Date(minMonth.getFullYear(), minMonth.getMonth() + maxMonthsAhead, 1);
@@ -94,7 +102,8 @@ export default function Calendar({
             const isWeekend = d.getDay() === 0 || d.getDay() === 6;
             const isPast = d.getTime() < today.getTime();
             const isToday = d.getTime() === today.getTime();
-            const disabled = isWeekend || isPast;
+            const isBlocked = blockedDates.has(dateStr);
+            const disabled = isWeekend || isPast || isBlocked;
             return (
               <button
                 key={dateStr}

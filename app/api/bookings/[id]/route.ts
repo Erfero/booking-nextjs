@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Booking from "@/lib/models/Booking";
+import { checkSlotBookable } from "@/lib/availability";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,6 +30,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!isAdmin && startsAt.getTime() < Date.now()) {
       return NextResponse.json({ message: "Ce rendez-vous est déjà passé." }, { status: 409 });
     }
+
+    if (body.action === "reschedule") {
+      const { date, time } = body;
+      const slotError = await checkSlotBookable(date, time, String(booking._id));
+      if (slotError) {
+        return NextResponse.json({ message: slotError }, { status: 409 });
+      }
+      booking.date = date;
+      booking.time = time;
+      await booking.save();
+      return NextResponse.json(booking);
+    }
+
     booking.status = "cancelled";
     await booking.save();
     return NextResponse.json(booking);

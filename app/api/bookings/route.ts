@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Booking from "@/lib/models/Booking";
-import { SERVICES_BASE, isBusinessDay } from "@/lib/services";
+import { SERVICES_BASE } from "@/lib/services";
+import { checkSlotBookable } from "@/lib/availability";
 
 export async function GET(req: NextRequest) {
   const auth = req.headers.get("authorization");
@@ -36,12 +37,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Service invalide." }, { status: 400 });
   }
   const serviceName = lang === "en" ? service.en.name : service.fr.name;
-  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !isBusinessDay(date)) {
-    return NextResponse.json({ message: "Date invalide ou hors jours ouvrés." }, { status: 400 });
-  }
-  if (!time || !/^\d{2}:\d{2}$/.test(time)) {
-    return NextResponse.json({ message: "Créneau invalide." }, { status: 400 });
-  }
   if (!customerName || typeof customerName !== "string" || customerName.trim().length < 2) {
     return NextResponse.json({ message: "Nom requis." }, { status: 400 });
   }
@@ -49,12 +44,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Email invalide." }, { status: 400 });
   }
 
-  await connectDB();
-
-  const existing = await Booking.findOne({ date, time, status: { $ne: "cancelled" } });
-  if (existing) {
-    return NextResponse.json({ message: "Ce créneau vient d'être réservé, choisis-en un autre." }, { status: 409 });
+  const slotError = await checkSlotBookable(date, time);
+  if (slotError) {
+    return NextResponse.json({ message: slotError }, { status: 409 });
   }
+
+  await connectDB();
 
   let booking;
   try {

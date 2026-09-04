@@ -16,6 +16,20 @@ interface Booking {
   status: "confirmed" | "cancelled";
 }
 
+interface Stats {
+  confirmedCount: number;
+  cancelledCount: number;
+  revenue: number;
+  bookingsThisWeek: number;
+  byService: { id: string; name: string; count: number }[];
+}
+
+interface BlockedDate {
+  _id: string;
+  date: string;
+  reason?: string;
+}
+
 function AdminHeader() {
   const { theme, toggleTheme } = useTheme();
   const { lang, t, toggleLang } = useI18n();
@@ -38,11 +52,25 @@ export default function AdminPage() {
   const { t } = useI18n();
   const [key, setKey] = useState("");
   const [bookings, setBookings] = useState<Booking[] | null>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [q, setQ] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [blockForm, setBlockForm] = useState({ date: "", reason: "" });
+  const [blockSubmitting, setBlockSubmitting] = useState(false);
+
+  const loadStats = async (authKey: string) => {
+    const res = await fetch("/api/admin/stats", { headers: { Authorization: `Bearer ${authKey}` } });
+    if (res.ok) setStats(await res.json());
+  };
+
+  const loadBlockedDates = async () => {
+    const res = await fetch("/api/blocked-dates");
+    if (res.ok) setBlockedDates(await res.json());
+  };
 
   const load = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -57,6 +85,8 @@ export default function AdminPage() {
       });
       if (!res.ok) throw new Error(t("invalidKey"));
       setBookings(await res.json());
+      loadStats(key);
+      loadBlockedDates();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
       setBookings(null);
@@ -74,11 +104,36 @@ export default function AdminPage() {
       });
       if (!res.ok) throw new Error();
       setBookings((prev) => prev?.map((b) => (b._id === id ? { ...b, status: "cancelled" } : b)) ?? null);
+      loadStats(key);
     } catch {
       // ignore, list stays as-is
     } finally {
       setCancellingId(null);
     }
+  };
+
+  const handleAddBlockedDate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!blockForm.date) return;
+    setBlockSubmitting(true);
+    try {
+      const res = await fetch("/api/blocked-dates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+        body: JSON.stringify(blockForm),
+      });
+      if (res.ok) {
+        setBlockForm({ date: "", reason: "" });
+        loadBlockedDates();
+      }
+    } finally {
+      setBlockSubmitting(false);
+    }
+  };
+
+  const handleRemoveBlockedDate = async (id: string) => {
+    await fetch(`/api/blocked-dates/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${key}` } });
+    setBlockedDates((prev) => prev.filter((d) => d._id !== id));
   };
 
   if (!bookings) {
@@ -107,6 +162,82 @@ export default function AdminPage() {
       <AdminHeader />
       <main className="c4l-main" style={{ maxWidth: 1100 }}>
         <h1>{t("adminBookings")} ({bookings.length})</h1>
+
+        {stats && (
+          <div className="c4l-stats-grid">
+            <div className="c4l-card c4l-stat-card">
+              <span>{t("statsRevenue")}</span>
+              <strong>{stats.revenue} €</strong>
+            </div>
+            <div className="c4l-card c4l-stat-card">
+              <span>{t("statsConfirmed")}</span>
+              <strong>{stats.confirmedCount}</strong>
+            </div>
+            <div className="c4l-card c4l-stat-card">
+              <span>{t("statsCancelled")}</span>
+              <strong>{stats.cancelledCount}</strong>
+            </div>
+            <div className="c4l-card c4l-stat-card">
+              <span>{t("statsThisWeek")}</span>
+              <strong>{stats.bookingsThisWeek}</strong>
+            </div>
+            <div className="c4l-card c4l-stat-card wide">
+              <span>{t("statsByService")}</span>
+              <div className="c4l-stat-breakdown">
+                {stats.byService.map((s) => (
+                  <div key={s.id}>
+                    <span>{s.name}</span>
+                    <strong>{s.count}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <section className="c4l-card c4l-blocked-dates">
+          <h2>{t("blockedDatesTitle")}</h2>
+          <p className="c4l-muted">{t("blockedDatesLead")}</p>
+          <form className="c4l-blocked-form" onSubmit={handleAddBlockedDate}>
+            <label>
+              {t("blockedDateLabel")}
+              <input
+                type="date"
+                required
+                value={blockForm.date}
+                onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
+              />
+            </label>
+            <label>
+              {t("blockedReasonLabel")}
+              <input
+                type="text"
+                value={blockForm.reason}
+                onChange={(e) => setBlockForm({ ...blockForm, reason: e.target.value })}
+              />
+            </label>
+            <button className="c4l-ghost" type="submit" disabled={blockSubmitting}>
+              {t("blockedDatesAdd")}
+            </button>
+          </form>
+          {blockedDates.length === 0 ? (
+            <p className="c4l-empty">{t("blockedDatesEmpty")}</p>
+          ) : (
+            <ul className="c4l-blocked-list">
+              {blockedDates.map((d) => (
+                <li key={d._id}>
+                  <span>
+                    {d.date}
+                    {d.reason ? ` — ${d.reason}` : ""}
+                  </span>
+                  <button type="button" className="c4l-ghost" onClick={() => handleRemoveBlockedDate(d._id)}>
+                    {t("blockedDatesRemove")}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         <form className="c4l-admin-filters" onSubmit={load}>
           <input placeholder={t("adminSearchPlaceholder")} value={q} onChange={(e) => setQ(e.target.value)} />

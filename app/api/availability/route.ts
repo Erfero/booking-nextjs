@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Booking from "@/lib/models/Booking";
+import BlockedDate from "@/lib/models/BlockedDate";
 import { generateDaySlots, isBusinessDay } from "@/lib/services";
 
 export async function GET(req: NextRequest) {
@@ -19,6 +20,12 @@ export async function GET(req: NextRequest) {
   }
 
   await connectDB();
+
+  const blocked = await BlockedDate.findOne({ date }).lean();
+  if (blocked) {
+    return NextResponse.json({ slots: [] });
+  }
+
   const taken = await Booking.find({ date, status: { $ne: "cancelled" } })
     .select("time -_id")
     .lean();
